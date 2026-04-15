@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Blessing & Tolulope – Save the Date</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600&family=EB+Garamond:ital@0;1&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --gold: #C9A84C;
+      --gold-light: #E8C97A;
+      --gold-pale: #F5E6C0;
+      --gold-deep: #8B6914;
+      --cream: #FAF6ED;
+      --ivory: #FFFDF8;
+      --dark: #1A1209;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #FFFFFF;
+      font-family: 'Cormorant Garamond', serif;
+      overflow: hidden;
+      height: 100dvh;
+      width: 100vw;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── GOLD AMBIENT ON WHITE ── */
+    .ambient {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 60% 40% at 50% 110%, rgba(201,168,76,0.12) 0%, transparent 70%),
+        radial-gradient(ellipse 30% 20% at 5% 5%,   rgba(201,168,76,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 30% 20% at 95% 5%,  rgba(201,168,76,0.06) 0%, transparent 60%);
+    }
+
+    /* Floating sparkles */
+    .sp {
+      position: fixed;
+      pointer-events: none;
+      z-index: 1;
+      color: var(--gold);
+      opacity: 0;
+      animation: drift linear infinite;
+    }
+    @keyframes drift {
+      0%   { transform: translateY(105vh) rotate(0deg);   opacity: 0; }
+      8%   { opacity: 0.55; }
+      92%  { opacity: 0.3; }
+      100% { transform: translateY(-40px) rotate(540deg); opacity: 0; }
+    }
+
+    /* Gold border lines top & bottom */
+    .edge {
+      position: fixed;
+      left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        var(--gold-pale) 15%,
+        var(--gold-light) 30%,
+        var(--gold) 50%,
+        var(--gold-light) 70%,
+        var(--gold-pale) 85%,
+        transparent 100%);
+      z-index: 200;
+    }
+    .edge-top    { top: 0; }
+    .edge-bottom { bottom: 0; }
+
+    /* ── MAIN SCENE ── */
+    #scene {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100vw;
+      height: 100dvh;
+    }
+
+    /* ── ENVELOPE AREA ──
+       Tall container: letter slides up out of the envelope.
+       Envelope sits at the bottom of this container.
+    */
+    #envelope-area {
+      position: relative;
+      width: 380px;
+      /* total height = letter height (~320px) + envelope height (260px) - overlap (80px) */
+      height: 500px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    /* ── LETTER ──
+       Starts tucked inside the envelope (bottom: 20px, so only slightly visible if at all).
+       On open, translates up by ~270px to fully emerge.
+    */
+    #letter {
+      position: absolute;
+      width: 340px;
+      background: var(--ivory);
+      border-radius: 3px;
+      box-shadow:
+        0 2px 30px rgba(201,168,76,0.18),
+        0 0 0 1px rgba(201,168,76,0.22);
+      /* starts tucked: bottom of letter aligns with ~top of envelope body */
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(0);
+      z-index: 2;          /* behind flap initially */
+      transition:
+        transform 1s cubic-bezier(0.22, 1, 0.36, 1) 0.35s;
+      overflow: hidden;
+    }
+
+    body.opened #letter {
+      transform: translateX(-50%) translateY(-290px);
+      z-index: 20;
+    }
+
+    /* Promote z-index mid-animation so it clears the envelope */
+    body.opened #letter { z-index: 20; }
+
+    .letter-top-bar {
+      height: 5px;
+      background: linear-gradient(90deg,
+        var(--gold-deep), var(--gold-light), var(--gold),
+        var(--gold-light), var(--gold-deep));
+    }
+
+    .letter-inner {
+      padding: 26px 30px 22px;
+      text-align: center;
+      position: relative;
+    }
+
+    /* Corner ornaments */
+    .lc { position:absolute; width:34px; height:34px; opacity:0.38; }
+    .lc svg { width:100%; height:100%; }
+    .lc-tl { top:6px;  left:6px;  }
+    .lc-tr { top:6px;  right:6px; transform:scaleX(-1); }
+    .lc-bl { bottom:6px; left:6px;  transform:scaleY(-1); }
+    .lc-br { bottom:6px; right:6px; transform:scale(-1,-1); }
+
+    .letter-invited {
+      font-family: 'Cinzel', serif;
+      font-size: 7.5px;
+      letter-spacing: 5px;
+      color: var(--gold);
+      margin-bottom: 8px;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.7s ease 1.4s, transform 0.7s ease 1.4s;
+    }
+    body.opened .letter-invited { opacity: 1; transform: translateY(0); }
+
+    .letter-divider {
+      width: 70px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin: 0 auto 10px;
+    }
+
+    .letter-headline {
+      font-family: 'EB Garamond', serif;
+      font-style: italic;
+      font-size: 13px;
+      color: rgba(139,105,20,0.75);
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .letter-names {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: 42px;
+      color: var(--dark);
+      line-height: 1.05;
+    }
+    .letter-amp {
+      display: block;
+      font-size: 54px;
+      color: var(--gold);
+      line-height: 0.85;
+      margin: 4px 0;
+    }
+
+    .letter-divider2 {
+      width: 110px; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(201,168,76,0.4), transparent);
+      margin: 12px auto 10px;
+    }
+
+    .letter-save {
+      font-family: 'Cinzel', serif;
+      font-size: 7.5px;
+      letter-spacing: 5px;
+      color: var(--gold);
+      margin-bottom: 5px;
+    }
+
+    .letter-date {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 30px;
+      font-weight: 600;
+      color: var(--dark);
+      letter-spacing: 3px;
+    }
+
+    .letter-location {
+      font-family: 'EB Garamond', serif;
+      font-style: italic;
+      font-size: 12px;
+      color: rgba(26,18,9,0.45);
+      margin-top: 5px;
+    }
+
+    .letter-ornament {
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--gold);
+      opacity: 0.5;
+      letter-spacing: 6px;
+    }
+
+    /* ── ENVELOPE BODY (clickable) ── */
+    #envelope-wrap {
+      position: relative;
+      width: 380px;
+      height: 260px;
+      cursor: pointer;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .env-body {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(160deg, #f6eeda 0%, #ede0c2 55%, #e8d6b2 100%);
+      border-radius: 4px 4px 10px 10px;
+      border: 1px solid rgba(201,168,76,0.55);
+      box-shadow:
+        0 6px 32px rgba(201,168,76,0.18),
+        0 2px 8px rgba(0,0,0,0.06);
+      overflow: hidden;
+      z-index: 5;
+    }
+
+    /* Diagonal fold lines */
+    .env-body::before {
+      content:'';
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(135deg, transparent 49.2%, rgba(201,168,76,0.22) 49.2%, rgba(201,168,76,0.22) 50.8%, transparent 50.8%),
+        linear-gradient(225deg, transparent 49.2%, rgba(201,168,76,0.22) 49.2%, rgba(201,168,76,0.22) 50.8%, transparent 50.8%);
+    }
+
+    .env-body::after {
+      content: '';
+      position: absolute;
+      inset: 8px;
+      border: 1px solid rgba(201,168,76,0.22);
+      border-radius: 2px 2px 7px 7px;
+      pointer-events: none;
+    }
+
+    /* Wax seal */
+    .wax-seal {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 58px; height: 58px;
+      z-index: 8;
+    }
+    .wax-seal svg { width:100%; height:100%;
+      filter: drop-shadow(0 2px 6px rgba(139,26,26,0.35)); }
+
+    .env-names {
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 12px;
+      color: rgba(139,105,20,0.65);
+      letter-spacing: 1px;
+      z-index: 6;
+    }
+
+    /* ── FLAP ──
+       Rotates backward (away from viewer) on open.
+       z-index: 12 so it sits above the letter initially.
+       After opening, letter z-index is promoted to 20.
+    */
+    .env-flap {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 140px;
+      transform-origin: top center;
+      transform-style: preserve-3d;
+      transition: transform 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 12;
+    }
+
+    .env-flap-shape {
+      width: 100%;
+      height: 100%;
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+      background: linear-gradient(165deg, #eddfc0 0%, #e0ceaa 55%, #d5c296 100%);
+      border-left:  1px solid rgba(201,168,76,0.4);
+      border-right: 1px solid rgba(201,168,76,0.4);
+      border-top:   1px solid rgba(201,168,76,0.4);
+      backface-visibility: hidden;
+    }
+
+    /* sheen on flap */
+    .env-flap-shape::after {
+      content:'';
+      position: absolute;
+      top: 0; left: 22%; right: 22%;
+      height: 45%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 100%);
+      clip-path: polygon(15% 0, 85% 0, 50% 100%);
+    }
+
+    body.opened .env-flap {
+      transform: rotateX(-178deg);
+    }
+
+    /* Hint */
+    .env-hint {
+      position: absolute;
+      bottom: -34px;
+      width: 100%;
+      text-align: center;
+      font-family: 'Cinzel', serif;
+      font-size: 9px;
+      letter-spacing: 4px;
+      color: rgba(201,168,76,0.6);
+      animation: hintpulse 2.5s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes hintpulse {
+      0%,100%{ opacity:0.35; }
+      50%    { opacity:1; }
+    }
+    body.opened .env-hint { display:none; }
+
+    /* ── MUSIC PLAYER ── */
+    #music-player {
+      position: fixed;
+      bottom: 26px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255,253,248,0.94);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(201,168,76,0.35);
+      border-radius: 50px;
+      padding: 9px 20px 9px 13px;
+      box-shadow:
+        0 4px 24px rgba(201,168,76,0.14),
+        0 1px 4px rgba(0,0,0,0.05);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.8s ease 1.3s;
+    }
+    body.opened #music-player { opacity:1; pointer-events:all; }
+
+    #play-btn {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(201,168,76,0.6);
+      background: linear-gradient(135deg, rgba(201,168,76,0.12), rgba(201,168,76,0.04));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      flex-shrink: 0;
+    }
+    #play-btn:hover { background: rgba(201,168,76,0.22); transform: scale(1.08); }
+    #play-btn svg { width:15px; height:15px; fill: var(--gold-deep); }
+
+    .music-info { display:flex; flex-direction:column; gap:2px; }
+    .music-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 13px;
+      color: var(--dark);
+      white-space: nowrap;
+    }
+    .music-artist {
+      font-family: 'Cinzel', serif;
+      font-size: 7.5px;
+      letter-spacing: 2px;
+      color: rgba(139,105,20,0.55);
+      white-space: nowrap;
+    }
+
+    .music-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 2.5px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+    .music-bars span {
+      display: block;
+      width: 3px;
+      background: var(--gold);
+      border-radius: 2px;
+      opacity: 0.75;
+      animation: bar 0.75s ease-in-out infinite alternate;
+    }
+    .music-bars span:nth-child(1){ height:6px;  animation-delay:0s; }
+    .music-bars span:nth-child(2){ height:14px; animation-delay:0.12s; }
+    .music-bars span:nth-child(3){ height:8px;  animation-delay:0.27s; }
+    .music-bars span:nth-child(4){ height:15px; animation-delay:0.07s; }
+    .music-bars.paused span { animation-play-state: paused; }
+
+    @keyframes bar {
+      from { transform: scaleY(0.2); }
+      to   { transform: scaleY(1); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="edge edge-top"></div>
+<div class="edge edge-bottom"></div>
+<div class="ambient"></div>
+
+<!-- Floating sparkles -->
+<div class="sp" style="left:4%;  font-size:10px; animation-duration:13s; animation-delay:0s;">✦</div>
+<div class="sp" style="left:14%; font-size:8px;  animation-duration:17s; animation-delay:5s;">✧</div>
+<div class="sp" style="left:27%; font-size:11px; animation-duration:10s; animation-delay:1.5s;">❋</div>
+<div class="sp" style="left:42%; font-size:8px;  animation-duration:15s; animation-delay:8s;">✦</div>
+<div class="sp" style="left:58%; font-size:10px; animation-duration:11s; animation-delay:2.5s;">✧</div>
+<div class="sp" style="left:72%; font-size:9px;  animation-duration:16s; animation-delay:4s;">❋</div>
+<div class="sp" style="left:86%; font-size:11px; animation-duration:12s; animation-delay:0.8s;">✦</div>
+<div class="sp" style="left:94%; font-size:8px;  animation-duration:9s;  animation-delay:3s;">✧</div>
+
+<div id="scene">
+  <div id="envelope-area">
+
+    <!-- LETTER (tucked inside, rises on open) -->
+    <div id="letter">
+      <div class="letter-top-bar"></div>
+      <div class="letter-inner">
+
+        <div class="lc lc-tl"><svg viewBox="0 0 34 34" fill="none"><path d="M2 2L2 17M2 2L17 2" stroke="#C9A84C" stroke-width="1.2"/><circle cx="2" cy="2" r="1.5" fill="#C9A84C"/><path d="M5 5L13 13" stroke="#C9A84C" stroke-width="0.5" opacity="0.4"/></svg></div>
+        <div class="lc lc-tr"><svg viewBox="0 0 34 34" fill="none"><path d="M2 2L2 17M2 2L17 2" stroke="#C9A84C" stroke-width="1.2"/><circle cx="2" cy="2" r="1.5" fill="#C9A84C"/><path d="M5 5L13 13" stroke="#C9A84C" stroke-width="0.5" opacity="0.4"/></svg></div>
+        <div class="lc lc-bl"><svg viewBox="0 0 34 34" fill="none"><path d="M2 2L2 17M2 2L17 2" stroke="#C9A84C" stroke-width="1.2"/><circle cx="2" cy="2" r="1.5" fill="#C9A84C"/><path d="M5 5L13 13" stroke="#C9A84C" stroke-width="0.5" opacity="0.4"/></svg></div>
+        <div class="lc lc-br"><svg viewBox="0 0 34 34" fill="none"><path d="M2 2L2 17M2 2L17 2" stroke="#C9A84C" stroke-width="1.2"/><circle cx="2" cy="2" r="1.5" fill="#C9A84C"/><path d="M5 5L13 13" stroke="#C9A84C" stroke-width="0.5" opacity="0.4"/></svg></div>
+
+        <p class="letter-invited">YOU HAVE BEEN INVITED</p>
+        <div class="letter-divider"></div>
+        <p class="letter-headline">To the wedding of</p>
+
+        <div class="letter-names">
+          Blessing
+          <span class="letter-amp">&</span>
+          Tolulope
+        </div>
+
+        <div class="letter-divider2"></div>
+        <p class="letter-save">SAVE THE DATE</p>
+        <p class="letter-date">15 · 08 · 2026</p>
+        <p class="letter-location">A celebration of love &amp; forever</p>
+        <div class="letter-ornament">— ✦ —</div>
+      </div>
+    </div>
+
+    <!-- ENVELOPE (clickable) -->
+    <div id="envelope-wrap" onclick="openEnvelope()" role="button" tabindex="0"
+         aria-label="Click to open your invitation"
+         onkeydown="if(event.key==='Enter')openEnvelope()">
+
+      <!-- Flap -->
+      <div class="env-flap">
+        <div class="env-flap-shape"></div>
+      </div>
+
+      <!-- Body -->
+      <div class="env-body">
+        <div class="wax-seal">
+          <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="30" cy="30" r="28" fill="#8B1A1A" stroke="#C9A84C" stroke-width="1.5"/>
+            <circle cx="30" cy="30" r="23" fill="none" stroke="#C9A84C" stroke-width="0.6" stroke-dasharray="2 3"/>
+            <text x="30" y="26" text-anchor="middle" font-family="Cormorant Garamond,serif"
+                  font-style="italic" font-size="9" fill="#C9A84C">B</text>
+            <text x="30" y="37" text-anchor="middle" font-family="Cormorant Garamond,serif"
+                  font-style="italic" font-size="10" fill="#C9A84C">&amp;</text>
+            <text x="30" y="48" text-anchor="middle" font-family="Cormorant Garamond,serif"
+                  font-style="italic" font-size="9" fill="#C9A84C">T</text>
+          </svg>
+        </div>
+        <div class="env-names">Blessing &amp; Tolulope</div>
+      </div>
+
+      <div class="env-hint">CLICK TO OPEN</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Music Player -->
+<div id="music-player">
+  <button id="play-btn" onclick="toggleMusic()" aria-label="Play or Pause">
+    <svg id="icon-play"  viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+    <svg id="icon-pause" viewBox="0 0 24 24" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+  </button>
+  <div class="music-info">
+    <div class="music-title">Can I Have This Dance</div>
+    <div class="music-artist">HIGH SCHOOL MUSICAL · 2008</div>
+  </div>
+  <div class="music-bars paused" id="music-bars">
+    <span></span><span></span><span></span><span></span>
+  </div>
+</div>
+
+<!-- Hidden YouTube player -->
+<div style="position:fixed;left:-9999px;bottom:-9999px;width:1px;height:1px;">
+  <div id="yt-player"></div>
+</div>
+
+<script>
+  /* ── OPEN ── */
+  let isOpened = false;
+  function openEnvelope() {
+    if (isOpened) return;
+    isOpened = true;
+    document.body.classList.add('opened');
+    setTimeout(loadYT, 700);
+  }
+
+  /* ── YOUTUBE ── */
+  const VID = 'xBpbM9SXQXE'; // HSM "Can I Have This Dance"
+  let player = null, apiReady = false, playing = false;
+
+  function loadYT() {
+    if (typeof YT !== 'undefined' && YT.Player) {
+      apiReady = true;
+      buildPlayer();
+      return;
+    }
+    const s = document.createElement('script');
+    s.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(s);
+  }
+
+  window.onYouTubeIframeAPIReady = function () {
+    apiReady = true;
+    buildPlayer();
+  };
+
+  function buildPlayer() {
+    player = new YT.Player('yt-player', {
+      width: '1', height: '1',
+      videoId: VID,
+      playerVars: { autoplay: 1, controls: 0, rel: 0, loop: 1, playlist: VID },
+      events: {
+        onReady(e)          { e.target.setVolume(75); e.target.playVideo(); },
+        onStateChange(e)    {
+          const s = e.data;
+          if (s === YT.PlayerState.PLAYING)  setUI(true);
+          if (s === YT.PlayerState.PAUSED ||
+              s === YT.PlayerState.ENDED)    setUI(false);
+        }
+      }
+    });
+  }
+
+  function setUI(isPlaying) {
+    playing = isPlaying;
+    document.getElementById('icon-play').style.display  = isPlaying ? 'none'  : 'block';
+    document.getElementById('icon-pause').style.display = isPlaying ? 'block' : 'none';
+    const b = document.getElementById('music-bars');
+    isPlaying ? b.classList.remove('paused') : b.classList.add('paused');
+  }
+
+  function toggleMusic() {
+    if (!player) return;
+    playing ? player.pauseVideo() : player.playVideo();
+  }
+</script>
+</body>
+</html>
